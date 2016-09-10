@@ -1,5 +1,5 @@
 /**
- jquery.businessHours v1.0.0
+ jquery.businessHours v1.0.1
  https://github.com/gEndelf/jquery.businessHours
 
  requirements:
@@ -16,6 +16,7 @@
             },
             postInit: function() {
             },
+            inputDisabled: false,
             checkedColorClass: "WorkingDayState",
             uncheckedColorClass: "RestDayState",
             colorBoxValContainerClass: "colorBoxContainer",
@@ -38,15 +39,24 @@
             //labelTimeTill: "till:",
             containerTmpl: '<div class="clean"/>',
             dayTmpl: '<div class="dayContainer">' +
-                '<div data-original-title="" class="colorBox"><input type="checkbox" class="invisible operationState"/></div>' +
-                '<div class="weekday"></div>' +
-                '<div class="operationDayTimeContainer">' +
-                '<div class="operationTime"><input type="text" name="startTime" class="mini-time operationTimeFrom" value=""/></div>' +
-                '<div class="operationTime"><input type="text" name="endTime" class="mini-time operationTimeTill" value=""/></div>' +
-                '</div></div>'
+            '<div data-original-title="" class="colorBox"><input type="checkbox" class="invisible operationState"/></div>' +
+            '<div class="weekday"></div>' +
+            '<div class="operationDayTimeContainer">' +
+            '<div class="operationTime"><input type="text" name="startTime" class="mini-time operationTimeFrom" value=""/></div>' +
+            '<div class="operationTime"><input type="text" name="endTime" class="mini-time operationTimeTill" value=""/></div>' +
+            '</div></div>'
         };
 
         var container = $(this);
+
+        function initTimeBox(timeBoxSelector, time, isInputDisabled) {
+            timeBoxSelector.val(time);
+
+            if(isInputDisabled) {
+                timeBoxSelector.prop('readonly', true);
+            }
+        }
+
         var methods = {
             getValueOrDefault: function(val, defaultVal) {
                 return (jQuery.type(val) === "undefined" || val == null) ? defaultVal : val;
@@ -104,10 +114,10 @@
                     operationDayNode.find('.operationState').prop('checked', isWorkingDay);
 
                     var timeFrom = $this.getValueOrDefault(day.timeFrom, options.defaultOperationTimeFrom);
-                    operationDayNode.find('[name="startTime"]').val(timeFrom);
+                    initTimeBox(operationDayNode.find('[name="startTime"]'), timeFrom, options.inputDisabled);
 
                     var endTime = $this.getValueOrDefault(day.timeTill, options.defaultOperationTimeTill);
-                    operationDayNode.find('[name="endTime"]').val(endTime);
+                    initTimeBox(operationDayNode.find('[name="endTime"]'), endTime, options.inputDisabled);
                 });
 
                 container.find(".operationState").change(function() {
@@ -125,10 +135,12 @@
                     checkbox.parents(".dayContainer").find(".operationTime").toggle(!timeControlDisabled);
                 }).trigger("change");
 
-                container.find(".colorBox").on("click", function() {
-                    var checkbox = $(this).find(".operationState");
-                    checkbox.prop("checked", !checkbox.prop('checked')).trigger("change");
-                });
+                if(!options.inputDisabled) {
+                    container.find(".colorBox").on("click", function() {
+                        var checkbox = $(this).find(".operationState");
+                        checkbox.prop("checked", !checkbox.prop('checked')).trigger("change");
+                    });
+                }
             }
         };
 
